@@ -40,7 +40,7 @@ impl<'a> SafeMap<'a> {
         map
     }
 
-    fn get(self, key: &'a str) -> Option<&'a str> {
+    fn get<'temp>(self, key: &'temp str) -> Option<&'a str> {
         let map = self.underlying.lock().unwrap();
         match map.get(key) {
             Some(node) => Some(node.value),
@@ -77,19 +77,17 @@ async fn handler(req: Request<Body>, map: SafeMap<'_>) -> Result<Response<Body>,
             let key = req.uri().path();
 
             match map.get(key) {
-                Some(value) => println!("{}", value),
-                None => println!("{}", "Nothing!"),
+                Some(value) => Ok(Response::new(Body::from(value))),
+                None => Ok(Response::new(Body::from("null"))),
             }
-
-            Ok(Response::new(Body::from("GET")))
         }
         &Method::POST => {
-            match map.get("asd") {
-                Some(value) => println!("{}", value),
-                None => println!("{}", "Nothing!"),
-            }
+            let key = req.uri().path();
 
-            Ok(Response::new(Body::from("GET")))
+            match map.set(key, key) {
+                Some(value) => Ok(Response::new(Body::from(value))),
+                None => Ok(Response::new(Body::from("null"))),
+            }
         }
         _ => Ok(Response::builder()
             .status(StatusCode::METHOD_NOT_ALLOWED)
