@@ -369,6 +369,7 @@ dependencies = [
 name = "radish"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "hyper",
  "serde",
  "serde_json",
